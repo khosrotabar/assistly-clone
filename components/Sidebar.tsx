@@ -20,7 +20,7 @@ function Sidebar() {
         </li>
         <li className="flex-1">
           <Link
-            href="/view-chatbot"
+            href="/view-chatbots"
             className="hover:opacity-50 flex flex-col text-center lg:text-left lg:flex-row items-center gap-2 p-5 rounded-md bg-[#2991EE]"
           >
             <PencilLine className="h-6 w-6 lg:h-8 lg:w-8" />

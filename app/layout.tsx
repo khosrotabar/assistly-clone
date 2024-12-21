@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import ApolloProviderWrapper from "@/components/ApolloProvider";
 
 export const metadata: Metadata = {
   title: "Assistly Clone",
@@ -13,14 +15,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className="min-h-screen flex">
-          {children}
+    <ApolloProviderWrapper>
+      <ClerkProvider>
+        <html lang="en">
+          <body className="min-h-screen flex">
+            {children}
 
-          {/* Toaster */}
-        </body>
-      </html>
-    </ClerkProvider>
+            <Toaster position="bottom-center" />
+          </body>
+        </html>
+      </ClerkProvider>
+    </ApolloProviderWrapper>
   );
 }
