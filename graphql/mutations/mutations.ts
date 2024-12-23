@@ -60,3 +60,52 @@ export const UPDATE_CHATBOT = gql`
     }
   }
 `;
+
+export const INSERT_MESSAGE = gql`
+  mutation InsertMessage(
+    $content: String!
+    $created_at: DateTime!
+    $sender: String!
+    $chat_session_id: Int!
+  ) {
+    insertMessages(
+      content: $content
+      created_at: $created_at
+      sender: $sender
+      chat_session_id: $chat_session_id
+    ) {
+      id
+      content
+      created_at
+      sender
+    }
+  }
+`;
+
+export const INSERT_CHAT_SESSION = gql`
+  mutation InsertChatSession(
+    $created_at: DateTime!
+    $chatbot_id: Int!
+    $guest_id: Int!
+  ) {
+    insertChat_sessions(
+      created_at: $created_at
+      chatbot_id: $chatbot_id
+      guest_id: $guest_id
+    ) {
+      id
+    }
+  }
+`;
+
+export const INSERT_GUEST = gql`
+  mutation InsertGuest(
+    $created_at: DateTime!
+    $email: String!
+    $name: String!
+  ) {
+    insertGuests(created_at: $created_at, email: $email, name: $name) {
+      id
+    }
+  }
+`;
