@@ -28,6 +28,13 @@ import Messages from "@/components/Messages";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
 
 const formSchema = z.object({
   message: z.string().min(2, "Your Message is too short"),
@@ -37,7 +44,7 @@ function ChatbotPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [isOpen, setIsopen] = useState(true);
+  const [isOpen, setIsOpen] = useState(true);
   const [chatId, setChatId] = useState(0);
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -85,12 +92,77 @@ function ChatbotPage({ params }: { params: Promise<{ id: string }> }) {
 
     setChatId(chatId);
     setLoading(false);
-    setIsopen(false);
+    setIsOpen(false);
   };
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
+    const { message } = values;
+
+    form.reset();
+    if (!name || !email) {
+      setIsOpen(true);
+      setLoading(false);
+      return;
+    }
+
+    if (!message.trim()) {
+      return;
+    }
+
+    const userMessage: Message = {
+      id: Date.now(),
+      content: message,
+      created_at: new Date().toISOString(),
+      chat_session_id: chatId,
+      sender: "user",
+    };
+
+    const loadingMessage: Message = {
+      id: Date.now() + 1,
+      content: "Thinking",
+      created_at: new Date().toISOString(),
+      chat_session_id: chatId,
+      sender: "ai",
+    };
+
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      userMessage,
+      loadingMessage,
+    ]);
+
+    try {
+      const response = await fetch("/api/send-message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: name,
+          chat_session_id: chatId,
+          chatbot_id: id,
+          content: message,
+        }),
+      });
+
+      const result = await response.json();
+
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === loadingMessage.id
+            ? { ...msg, content: result.content, id: result.id }
+            : msg
+        )
+      );
+    } catch (error) {
+      console.log("Error sending message: ", error);
+    }
+  }
 
   return (
     <div className="w-full bg-gray-100 flex">
-      <Dialog open={isOpen} onOpenChange={setIsopen}>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <DialogHeader>
@@ -161,6 +233,38 @@ function ChatbotPage({ params }: { params: Promise<{ id: string }> }) {
           messages={messages}
           chatbotName={chatBotData?.chatbots.name ?? ""}
         />
+
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex items-start sticky bottom-0 z-50
+          space-x-4 drop-shadow-lg p-4 bg-gray-100 rounded-md"
+          >
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel hidden>Message</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Type a message..."
+                      {...field}
+                      className="p-8"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button
+              disabled={form.formState.isSubmitting || !form.formState.isValid}
+              type="submit"
+              className="h-full"
+            >
+              Send
+            </Button>
+          </form>
+        </Form>
       </div>
     </div>
   );
